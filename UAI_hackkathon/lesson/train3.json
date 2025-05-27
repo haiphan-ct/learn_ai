@@ -1,0 +1,315 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -420,
+        0
+      ],
+      "id": "dc37bd8b-9d3a-4a80-b3e0-47e4f6bb6b35",
+      "name": "When chat message received",
+      "webhookId": "63895c6f-3729-4dd6-a386-81272ef4a446"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=Today is {{ $now }}\nMy email is: thienpham@chotot.vn\n\nYou are a smart assistant that helps schedule meetings based on user requests.\n\n\nUser messages may include:\n- Topic of discussion\n- Time frame (like \"tomorrow\", \"next week\"). If not mention, it mean tomorrow or the day after\n\nYour available tools:\n- calendar_occupiedTime (emails: [string], timerange: string): Returns occupied times of users in the specified time frame.\n- calendar_createEvent(title: string, startTime: string, endTime: string, attendees: [string]): Books a meeting.\n\nWhen you receive a request:\n1. Find all @mentioned people (like abc@chotot.vn)\n2. Get occupied time slots of all participants using calendar_occupiedTime\n5. Find free slots of each user and then find overlapping free slots\n6. Suggest a 3-4 options to the user. Each slot duration is varied from 30 - 60 minutes depend on the topic, feel free to suggest the duration. Avoid lunch time and weekend\n7. If the user picks a time, call calendar_createEvent to schedule it\n8. Respond in a friendly and professional tone.\n\nAlways think step-by-step.\nOnly call one tool at a time.\nConfirm with the user before booking.\n\nExample interaction:\n\nUser: \"Book a meeting with @Anna about project update next Monday\"\n- Find Anna's email\n- Parse \"next Monday\" into time range\n- Get busy times\n- Suggest available slots like 10:00-11:00AM and 2:00PM-3:00PM\n- If confirmed, create event "
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        -200,
+        0
+      ],
+      "id": "ea7dfa8d-20a0-4adc-8f2f-c89525bb6687",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "gpt-4o"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -300,
+        220
+      ],
+      "id": "f07fc6e1-51bb-45be-a288-6c5bf2a821cc",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "LyAvXaCMzTsQXxKo",
+          "name": "Litellm Training"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -160,
+        240
+      ],
+      "id": "906a0b52-ad10-4587-81e9-17cf689ba895",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Use this tool to check for calendar occupied slots",
+        "resource": "calendar",
+        "calendar": {
+          "__rl": true,
+          "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Calendar', ``, 'string') }}",
+          "mode": "id",
+          "__regex": "(^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)*)"
+        },
+        "timeMin": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start_Time', ``, 'string') }}",
+        "timeMax": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End_Time', ``, 'string') }}",
+        "options": {
+          "outputFormat": "bookedSlots",
+          "timezone": {
+            "__rl": true,
+            "value": "Asia/Ho_Chi_Minh",
+            "mode": "list",
+            "cachedResultName": "Asia/Ho_Chi_Minh"
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        20,
+        240
+      ],
+      "id": "8cbfdca9-9688-42f4-b9fd-43c6ab37409c",
+      "name": "calendar_occupied",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "CFsOBZrDIsPsvSNG",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "calendar_create\n\nUse this tool to book a meeting",
+        "calendar": {
+          "__rl": true,
+          "value": "thienpham@chotot.vn",
+          "mode": "list",
+          "cachedResultName": "thienpham@chotot.vn"
+        },
+        "start": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', ``, 'string') }}",
+        "end": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End', ``, 'string') }}",
+        "additionalFields": {
+          "attendees": [
+            "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('attendees0_Attendees', ``, 'string') }}"
+          ],
+          "description": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Description', `generate a detail description for the event, so that everyone can get a clear context before starting the meeting`, 'string') }}",
+          "summary": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Summary', ``, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        180,
+        260
+      ],
+      "id": "2a63d81e-cbbf-430c-8c13-03d408b2484c",
+      "name": "calendar_create",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "CFsOBZrDIsPsvSNG",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "use this tool to get the events detail so that you can update or delete correctly",
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Calendar', ``, 'string') }}",
+          "mode": "id",
+          "__regex": "(^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)*)"
+        },
+        "options": {
+          "query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Query', `Free text search terms to find events that match`, 'string') }}",
+          "timeZone": {
+            "__rl": true,
+            "value": "Asia/Ho_Chi_Minh",
+            "mode": "list",
+            "cachedResultName": "Asia/Ho_Chi_Minh"
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        560,
+        260
+      ],
+      "id": "bda271ec-cf8f-48ae-8b2b-6350a3a836ee",
+      "name": "calendar_get",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "CFsOBZrDIsPsvSNG",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Those this tool to delete a calendar event. You can use it to delete an event and use other tool to create new one",
+        "operation": "delete",
+        "calendar": {
+          "__rl": true,
+          "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Calendar', `The id of the event, it is a string generated by Google, get the id by using calendar_get tool\neg: ojgkbar8u9pnf24rare9kpqae0`, 'string') }}",
+          "mode": "id"
+        },
+        "eventId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Event_ID', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        360,
+        240
+      ],
+      "id": "d4402280-0595-4a98-9abc-d9d42c933c18",
+      "name": "calendar_update",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "CFsOBZrDIsPsvSNG",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputSource": "jsonExample",
+        "jsonExample": "{\n  \"chatInput\": \"string\",\n  \"sessionId\": \"string\"\n}"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -420,
+        -180
+      ],
+      "id": "3f93b937-5a0e-4c3b-b2cb-afe8323d9a8b",
+      "name": "When Executed by Another Workflow"
+    }
+  ],
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "calendar_occupied": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "calendar_create": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "calendar_get": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "calendar_update": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b5575fbb618ce18eded2642e17168662b4d51c9021b6948119e3da34a38c4af4"
+  }
+}
