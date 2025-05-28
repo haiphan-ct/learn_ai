@@ -168,3 +168,33 @@ if __name__ == "__main__":
     result = call_openai(prompt)
     print(result)
     print("\n=== Kết thúc ===")
+
+# def call_ollama() -> str:
+#     try:
+#         # Tạo prompt tương tự nội dung system + user trong call_openai
+#         prompt = (
+#             "Bạn là chuyên gia đánh giá giá trị vật dụng dựa trên hình ảnh. "
+#             "Cho biết: 1. Vật thể trong ảnh là gì? 2. Mô tả vật thể một cách ngắn gọn. "
+#             "3. Mức giá trung bình của vật thể này tại Việt Nam (bằng VND). "
+#             "Trả lời dưới dạng JSON với cấu trúc: "
+#             "[{'name': <tên vật>, 'description': <mô tả>, 'price_low': <giá thấp>, 'price_high': <giá cao>}].\n"
+#             f"Hình ảnh: {imageURL}\n"
+#             "Trong hình này có vật gì và giá của nó khoảng bao nhiêu tiền?"
+#         )
+
+#         payload = {
+#             "model": OLLAMA_MODEL,
+#             "prompt": prompt,
+#             "stream": False
+#         }
+
+#         response = requests.post(OLLAMA_URL, json=payload)
+#         response.raise_for_status()
+
+#         result = response.json().get("response", "").strip()
+#         return result
+
+#     except requests.RequestException as e:
+#         return f"[Lỗi khi gọi Ollama] {e}"
+
+# print(response.choices[0].message.content)
